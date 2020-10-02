@@ -1,0 +1,38 @@
+cd ATAC_sequencing/all_sciATAC/data_reprocess_ce11;
+
+mkdir lda_pipeline;
+
+python ATAC_sequencing/all_sciATAC/src_me/lda_plus2.py --cuts=./all_batches_merged.blacklist_filtered.cuts.bed --bow=./all_batches_merged.blacklist_filtered.macs2_q0.05_merged.bow --indextable=./all_batches_merged.blacklist_filtered.macs2_q0.05_merged.readdepth.150.cells.indextable.txt --peaks_bed=./all_batches_merged.blacklist_filtered_peaks.merged.bed --outdir=./lda_pipeline/ --topics=5,10,15,20,25,30,35,40,45,50,55,60,70,80,90,100 --seed=1986 --job_threads=8 --job_coremem=4 --job_proj=sage --job_name=lda1
+
+mkdir lda_pipeline/topic_analysis/rank_peaks;
+
+python ATAC_sequencing/all_sciATAC/src_me/lda_plus2.py --cuts=./all_batches_merged.blacklist_filtered.cuts.bed --bow=./lda_pipeline/topic_analysis/all_peaks.merged.allcells.bow --indextable=./lda_pipeline/topic_analysis/all_peaks.merged.allcells.zeros_filtered.indextable.txt --peaks_bed=./lda_pipeline/topic_analysis/all_peaks.merged.allcells.zeros_filtered.bed --outdir=./lda_pipeline/topic_analysis/rank_peaks/ --topics=5,10,15,20,25,30,35,40,45,50,55,60,70 --seed=1987 --job_threads=8 --job_coremem=4 --job_proj=sage --job_name=lda2 > ./lda_pipeline/topic_analysis/rank_peaks/lda_pipeline.out
+
+####
+# Many peaks are wide and encompass multiple likely TF binding sites, so
+# for reporting peaks, I implemented a custom script to call summits and
+# split peaks into several contiguous regions
+cd ./topic_analysis/rank_peaks/topic_analysis;
+for path in */*_peaks.narrowPeak;
+do
+  echo $path;
+  python ATAC_sequencing/all_sciATAC/src_me/expand_summits2.py $path ${path%_peaks.narrowPeak}.subtract.bw > ${path%_peaks.narrowPeak}_summits_expanded2.bed || break;
+done;
+
+####
+#set up the tissue-specific analysis
+
+mkdir ./lda_pipeline/tissue_analysis;
+
+cd ./lda_pipeline/tissue_analysis;
+
+#I wrote the tissue analysis set up script in ./lda_pipeline/tissue_analysis/readme.txt
+
+cd ./lda_pipeline;
+
+chmod 774 ./tissue_analysis/readme.txt
+
+./tissue_analysis/readme.txt;
+
+#run the lda pipeline commands in ./tissue_analysis/lda_pipeline.cmd_list.txt
+

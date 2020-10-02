@@ -1,0 +1,9 @@
+coelomocyte 167,86,41
+glia 255,128,0
+gonad 249,127,192
+hypodermis 78,174,74
+intestine 252,216,0
+muscle 229,26,30
+neuron 152,78,163
+pharynx 55,125,184
+sexmyoblast 249,127,192

@@ -1,0 +1,98 @@
+cd ATAC_sequencing/all_sciATAC/data_reprocess_ce11/lda_pipeline/topic_analysis/rank_peaks/topic_analysis;
+
+#Generate bigwigs for track hub:
+for path in ./*/*_treat_pileup.bdg;
+do
+  outfile=${path%_treat_pileup.bdg}.subtract.bdg;
+  qsub -l mfree=8G -cwd -j y -b y -N make_wigs -o ./make_wigs.out "source activate python3; macs2 bdgcmp -t $path -c ${path%_treat_pileup.bdg}_control_lambda.bdg -m subtract -o $outfile; bedtools intersect -a $outfile -b ATAC_sequencing/2018_worm_atac/ref_data/WS235/c_elegans.WS235.chrom.sizes.bed > ${outfile}.tmp.bdg; bedGraphToBigWig ${outfile}.tmp.bdg ATAC_sequencing/2018_worm_atac/ref_data/WS235/c_elegans.WS235.chrom.sizes ${outfile%.bdg}.bw; rm ${outfile}.tmp.bdg";
+done;
+
+mkdir merge_and_expand;
+cd merge_and_expand;
+
+#Generate neuron consensus peak segments
+cat ../0/0_peaks.narrowPeak ../6/6_peaks.narrowPeak ../14/14_peaks.narrowPeak ../15/15_peaks.narrowPeak ../16/16_peaks.narrowPeak ../18/18_peaks.narrowPeak ../19/19_peaks.narrowPeak ../32/32_peaks.narrowPeak ../33/33_peaks.narrowPeak ../38/38_peaks.narrowPeak ../45/45_peaks.narrowPeak | sort -k1,1 -k2,2n | bedtools merge -i stdin | awk 'BEGIN{OFS="\t"}{print($0,"peak"NR);}' > ./neuron_narrowPeak.merged.bed;
+
+python ATAC_sequencing/all_sciATAC/src_me/expand_summits2.py ./neuron_narrowPeak.merged.bed ../0/0.subtract.bw ../6/6.subtract.bw ../14/14.subtract.bw ../15/15.subtract.bw ../16/16.subtract.bw ../18/18.subtract.bw ../19/19.subtract.bw ../32/32.subtract.bw ../33/33.subtract.bw ../38/38.subtract.bw ../45/45.subtract.bw > ./expanded_neuron_summits.bed;
+
+echo "track type=bed name=neuron_consensus visibility=squish" | cat - ./expanded_neuron_summits.bed > ~/public_html/nopass/atac_paper/expanded_neuron_summits.bed
+
+echo "http://noble.gs.washington.edu/~tdurham/nopass/atac_paper/expanded_neuron_summits.bed" >> consensus_file_urls.txt
+
+python ATAC_sequencing/all_sciATAC/src_me/add_bed_colors.py ./expanded_neuron_summits.bed ./expanded_neuron_summits.colors.bed 152,78,163 --label=neuron --scale_scores
+
+
+#Generate hypodermis consensus peak segments
+cat ../1/1_peaks.narrowPeak ../9/9_peaks.narrowPeak ../10/10_peaks.narrowPeak ../17/17_peaks.narrowPeak ../25/25_peaks.narrowPeak ../30/30_peaks.narrowPeak ../41/41_peaks.narrowPeak ../43/43_peaks.narrowPeak ../46/46_peaks.narrowPeak | sort -k1,1 -k2,2n | bedtools merge -i stdin | awk 'BEGIN{OFS="\t"}{print($0,"peak"NR);}' > ./hypodermis_narrowPeak.merged.bed;
+
+python ATAC_sequencing/all_sciATAC/src_me/expand_summits2.py ./hypodermis_narrowPeak.merged.bed ../9/9.subtract.bw ../10/10.subtract.bw ../17/17.subtract.bw ../25/25.subtract.bw ../30/30.subtract.bw ../41/41.subtract.bw ../43/43.subtract.bw ../46/46.subtract.bw > ./expanded_hypodermis_summits.bed;
+
+echo "track type=bed name=hypodermis_consensus visibility=squish" | cat - ./expanded_hypodermis_summits.bed > ~/public_html/nopass/atac_paper/expanded_hypodermis_summits.bed
+
+echo "http://noble.gs.washington.edu/~tdurham/nopass/atac_paper/expanded_hypodermis_summits.bed" >> consensus_file_urls.txt
+
+python ATAC_sequencing/all_sciATAC/src_me/add_bed_colors.py ./expanded_hypodermis_summits.bed ./expanded_hypodermis_summits.colors.bed 78,174,74 --label=hypodermis --scale_scores
+
+
+#Generate glia consensus peak segments
+cat ../21/21_peaks.narrowPeak ../27/27_peaks.narrowPeak ../12/12_peaks.narrowPeak ../31/31_peaks.narrowPeak | sort -k1,1 -k2,2n | bedtools merge -i stdin | awk 'BEGIN{OFS="\t"}{print($0,"peak"NR);}' > ./glia_narrowPeak.merged.bed;
+
+python ATAC_sequencing/all_sciATAC/src_me/expand_summits2.py ./glia_narrowPeak.merged.bed ../21/21.subtract.bw ../27/27.subtract.bw ../12/12.subtract.bw ../31/31.subtract.bw > ./expanded_glia_summits.bed;
+
+echo "track type=bed name=glia_consensus visibility=squish" | cat - ./expanded_glia_summits.bed > ~/public_html/nopass/atac_paper/expanded_glia_summits.bed
+
+echo "http://noble.gs.washington.edu/~tdurham/nopass/atac_paper/expanded_glia_summits.bed" >> consensus_file_urls.txt
+
+python ATAC_sequencing/all_sciATAC/src_me/add_bed_colors.py ./expanded_glia_summits.bed ./expanded_glia_summits.colors.bed 255,128,0 --label=glia --scale_scores
+
+
+#Generate gonad consensus peak segments
+cat ../24/24_peaks.narrowPeak ../36/36_peaks.narrowPeak ../48/48_peaks.narrowPeak ../7/7_peaks.narrowPeak | sort -k1,1 -k2,2n | bedtools merge -i stdin | awk 'BEGIN{OFS="\t"}{print($0,"peak"NR);}' > ./gonad_narrowPeak.merged.bed;
+
+python ATAC_sequencing/all_sciATAC/src_me/expand_summits2.py ./gonad_narrowPeak.merged.bed ../24/24.subtract.bw ../36/36.subtract.bw ../48/48.subtract.bw ../7/7.subtract.bw > ./expanded_gonad_summits.bed;
+
+echo "track type=bed name=gonad_consensus visibility=squish" | cat - ./expanded_gonad_summits.bed > ~/public_html/nopass/atac_paper/expanded_gonad_summits.bed
+
+echo "http://noble.gs.washington.edu/~tdurham/nopass/atac_paper/expanded_gonad_summits.bed" >> consensus_file_urls.txt
+
+python ATAC_sequencing/all_sciATAC/src_me/add_bed_colors.py ./expanded_gonad_summits.bed ./expanded_gonad_summits.colors.bed 249,127,192 --label=gonad --scale_scores
+
+
+#Generate intestine consensus peak segments
+cat ../51/51_peaks.narrowPeak ../13/13_peaks.narrowPeak ../23/23_peaks.narrowPeak ../47/47_peaks.narrowPeak | sort -k1,1 -k2,2n | bedtools merge -i stdin | awk 'BEGIN{OFS="\t"}{print($0,"peak"NR);}' > ./intestine_narrowPeak.merged.bed;
+
+python ATAC_sequencing/all_sciATAC/src_me/expand_summits2.py ./intestine_narrowPeak.merged.bed ../51/51.subtract.bw ../13/13.subtract.bw ../23/23.subtract.bw ../47/47.subtract.bw > ./expanded_intestine_summits.bed;
+
+echo "track type=bed name=intestine_consensus visibility=squish" | cat - ./expanded_intestine_summits.bed > ~/public_html/nopass/atac_paper/expanded_intestine_summits.bed
+
+echo "http://noble.gs.washington.edu/~tdurham/nopass/atac_paper/expanded_intestine_summits.bed" >> consensus_file_urls.txt
+
+python ATAC_sequencing/all_sciATAC/src_me/add_bed_colors.py ./expanded_intestine_summits.bed ./expanded_intestine_summits.colors.bed 252,216,0 --label=intestine --scale_scores
+
+
+#Generate pharynx consensus peak segments
+cat ../53/53_peaks.narrowPeak ../35/35_peaks.narrowPeak | sort -k1,1 -k2,2n | bedtools merge -i stdin | awk 'BEGIN{OFS="\t"}{print($0,"peak"NR);}' > ./pharynx_narrowPeak.merged.bed;
+
+python ATAC_sequencing/all_sciATAC/src_me/expand_summits2.py ./pharynx_narrowPeak.merged.bed ../53/53.subtract.bw ../35/35.subtract.bw > ./expanded_pharynx_summits.bed;
+
+echo "track type=bed name=pharynx_consensus visibility=squish" | cat - ./expanded_pharynx_summits.bed > ~/public_html/nopass/atac_paper/expanded_pharynx_summits.bed
+
+echo "http://noble.gs.washington.edu/~tdurham/nopass/atac_paper/expanded_pharynx_summits.bed" >> consensus_file_urls.txt
+
+python ATAC_sequencing/all_sciATAC/src_me/add_bed_colors.py ./expanded_pharynx_summits.bed ./expanded_pharynx_summits.colors.bed 55,125,184 --label=pharynx --scale_scores
+
+#for the single-topic tissues muscle, coelomocyte, and sex myoblast, just add color info to the single topic expanded peaks file
+python ATAC_sequencing/all_sciATAC/src_me/add_bed_colors.py ../40/40_summits_expanded2.bed ./expanded_muscle_summits.colors.bed 229,26,30 --label=muscle --scale_scores
+
+python ATAC_sequencing/all_sciATAC/src_me/add_bed_colors.py ../4/4_summits_expanded2.bed ./expanded_coelomocyte_summits.colors.bed 167,86,41 --label=coelomocyte --scale_scores
+
+python ATAC_sequencing/all_sciATAC/src_me/add_bed_colors.py ../37/37_summits_expanded2.bed ./expanded_sexmyoblast_summits.colors.bed 249,127,192 --label=sexmyoblast --scale_scores
+
+#combine all of these files and sort to make a final peaks file
+cat *.colors.bed | sort -k1,1 -k2,2n > all_tissues_expanded_summits.bed
+
+#merge those peaks for overlap analysis
+cat */*_summits_expanded2.bed | sort -k1,1 -k2,2n | bedtools merge -i stdin > test_merge_and_expand/all_summits_expanded2.merged.bed
+
+#expand the summits once again to avoid having enormous peaks
+awk 'BEGIN{OFS="\t"}{print($0,"peak"NR);}' ./all_summits_expanded2.merged.bed | python ATAC_sequencing/all_sciATAC/src_me/expand_summits2.py stdin ../*/*.subtract.bw > all_summits_expanded2.merged.expanded2.bed

@@ -1,0 +1,159 @@
+
+cd ATAC_sequencing/all_sciATAC/data_reprocess_ce11/
+mkdir raw
+mkdir raw/fastq
+
+ln -s ATAC_sequencing/20180622_sciATAC/darren_processed/fastq/Undetermined_S0_R1_001.fastq.gz ./raw/fastq/batch1_R1.fastq.gz
+ln -s ATAC_sequencing/20180622_sciATAC/darren_processed/fastq/Undetermined_S0_R2_001.fastq.gz ./raw/fastq/batch1_R2.fastq.gz
+
+#Note: batch1 was sequenced on the MiSeq, not the NextSeq (so no -X parameter)
+python ../src/preprocess/sc_atac_bcl2fastq.start_from_fastq.py --read1=./raw/fastq/batch1_R1.fastq.gz --read2=./raw/fastq/batch1_R2.fastq.gz -O ./raw -P batch1
+
+ln -s ATAC_sequencing/20181113_sciATAC/data/raw/fastq/Undetermined_S0_R1_001.fastq.gz ./raw/fastq/batch4_R1.fastq.gz
+ln -s ATAC_sequencing/20181113_sciATAC/data/raw/fastq/Undetermined_S0_R2_001.fastq.gz ./raw/fastq/batch4_R2.fastq.gz
+
+qsub -j y -b y -N split_fq -o ./split_fq.out -l mfree=16G -P sage -cwd "source activate merged_env; python ../src/preprocess/sc_atac_bcl2fastq.start_from_fastq.py --read1=./raw/fastq/batch4_R1.fastq.gz --read2=./raw/fastq/batch4_R2.fastq.gz -O ./raw -P batch4 -X"
+
+ln -s ATAC_sequencing/20190128_sciATAC_seq/data/raw/fastq/Undetermined_S0_R1_001.fastq.gz ./raw/fastq/batch5_R1.fastq.gz
+ln -s ATAC_sequencing/20190128_sciATAC_seq/data/raw/fastq/Undetermined_S0_R2_001.fastq.gz ./raw/fastq/batch5_R2.fastq.gz
+
+qsub -j y -b y -N split_fq -o ./split_fq.out -l mfree=16G -P sage -cwd "source activate merged_env; python ../src/preprocess/sc_atac_bcl2fastq.start_from_fastq.py --read1=./raw/fastq/batch5_R1.fastq.gz --read2=./raw/fastq/batch5_R2.fastq.gz -O ./raw -P batch5 -X"
+
+
+
+#align, filter, sort, and deduplicate reads (the C. elegans portion of this script uses bowtie2, NOT bwa)
+cd ATAC_sequencing/all_sciATAC/data_reprocess_ce11
+
+bash ../src/preprocess/sc_atac_justmapping_bwa.sh ./raw/batch1 ce11
+
+qsub -j y -b y -N aln -o ./aln.out -cwd -l mfree=4G -pe serial 8 "source activate merged_env; bash ../src/preprocess/sc_atac_justmapping_bwa.sh ./raw/batch4 ce11"
+
+qsub -j y -b y -N aln -o ./aln.out -cwd -l mfree=4G -pe serial 8 "source activate merged_env; bash ../src/preprocess/sc_atac_justmapping_bwa.sh ./raw/batch5 ce11"
+
+
+
+#copy indextables from original analysis
+cp -P ../data/batch_bams/batch?.indextable.txt ./batch_bams/
+
+
+
+###
+#Now, modify the indices in the individual bam files so that they can be combined
+suffix=VWXYZ;
+mkdir batch_bams_bcmod;
+for path in `ls batch_bams/batch?.indextable.txt`;
+do
+    basename=${path##*/};
+    idx=${basename:5:1};
+    letter=${suffix:idx-1:1};
+    echo "$idx $letter";
+    awk "BEGIN{OFS=\"\t\"}{print(\$1\"$letter\",\"${basename%%.indextable.txt}\");}" $path > batch_bams_bcmod/$basename;
+    bamname=${path%%.indextable.txt}.bam
+    python ../src_me/modify_barcodes.py $bamname $letter | samtools view -hSb - > batch_bams_bcmod/${bamname##*/};
+done
+
+
+
+###
+#Combine the indextables and bam files from the different batches
+cat ./batch_bams_bcmod/batch?.indextable.txt > ./all_batches_merged.indextable.txt
+
+java -Xmx6G -jar ~/src/PicardTools/picard.jar MergeSamFiles I=./batch_bams_bcmod/batch1.bam I=./batch_bams_bcmod/batch4.bam I=./batch_bams_bcmod/batch5.bam O=./all_batches_merged.bam USE_THREADING=true;
+
+
+
+###
+#filter out the ce11 blacklist
+bedtools intersect -v -a ./all_batches_merged.bam -b ../../2018_worm_atac/ref_data/ce11-blacklist.v2.bed.gz | samtools sort -@ 2 -n -T ./sorttmp1 | samtools fixmate - - | samtools sort -@ 2 -T ./sorttmp2 -o ./all_batches_merged.blacklist_filtered.bam
+
+samtools index ./all_batches_merged.blacklist_filtered.bam
+
+
+
+###
+#Realign genomic DNA negative control
+cd ATAC_sequencing/20170824_nextseq_negctrl/
+mkdir ../all_sciATAC/data_reprocess_ce11/neg_ctrl;
+mkdir ../all_sciATAC/data_reprocess_ce11/neg_ctrl/fastq;
+ln -s `pwd`/fastq/ATAC_gdna_neg_ctrl_ad2-3_S3_R1_001.fastq.gz ../all_sciATAC/data_reprocess_ce11/neg_ctrl/fastq/gdna_neg_R1.fastq.gz;
+ln -s `pwd`/fastq/ATAC_gdna_neg_ctrl_ad2-3_S3_R2_001.fastq.gz ../all_sciATAC/data_reprocess_ce11/neg_ctrl/fastq/gdna_neg_R2.fastq.gz;
+
+mkdir ../all_sciATAC/data_reprocess_ce11/neg_ctrl/fastq_trim;
+cd ../all_sciATAC/data_reprocess_ce11/neg_ctrl
+for fastq in `ls fastq/*R1.fastq.gz`;
+do
+  echo $fastq; fastqbase=${fastq##*/};
+  fastqbase=${fastqbase%_R1.fastq.gz};
+  java -jar ~/src/Trimmomatic-0.36/trimmomatic-0.36.jar PE $fastq ${fastq/R1/R2} -baseout fastq_trim/$fastqbase ILLUMINACLIP:ATAC_sequencing/20171108_nextseq/adapters.fa:2:30:10:1:true;
+done;
+
+for path in `ls fastq_trim/*`;
+do
+  mv $path ${path}.fastq;
+  gzip ${path}.fastq;
+done
+
+bowtie2 -p $NSLOTS -X 2000 -3 1 -x ATAC_sequencing/2018_worm_atac/ref_data/WS235/c_elegans.WS235.genomic -1 fastq_trim/gdna_neg_1P.fastq.gz -2 fastq_trim/gdna_neg_2P.fastq.gz 2> ./gdna_neg.bowtie2.log \
+  | samtools view -bS - > ./gdna_neg.bam;
+
+java -Xmx8G -jar ~/src/PicardTools/picard.jar SortSam \
+  I=./gdna_neg.bam \
+  O=./gdna_neg.namesorted.bam \
+  SORT_ORDER=queryname;
+#call Picard MarkDuplicates, and then return the alignments to coordinate sort order
+java -Xmx6G -jar ~/src/PicardTools/picard.jar MarkDuplicates \
+  I=./gdna_neg.namesorted.bam \
+  O=/dev/stdout \
+  M=./gdna_neg.markdups_metrics.txt \
+  TAGGING_POLICY=All | \
+  java -Xmx6G -jar ~/src/PicardTools/picard.jar SortSam \
+    I=/dev/stdin \
+    O=./gdna_neg.dups_marked.bam \
+    SORT_ORDER=coordinate;
+rm ./gdna_neg.namesorted.bam
+#index the marked duplicates bam
+samtools index ./gdna_neg.dups_marked.bam;
+
+
+samtools view -h -f3 -F1036 -q10 gdna_neg.dups_marked.bam \
+  | grep -v 'chrM' \
+  | samtools view -Su - \
+  | samtools sort -T ./ -o gdna_neg.q10.nodups.bam -@ $NSLOTS -;
+samtools index gdna_neg.q10.nodups.bam;
+
+#filter out the ce11 blacklist
+bedtools intersect -v -a ./gdna_neg.q10.nodups.bam -b ../../2018_worm_atac/ref_data/ce11-blacklist.v2.bed.gz | samtools sort -@ 2 -n -T ./sorttmp1 | samtools fixmate - - | samtools sort -@ 2 -T ./sorttmp2 -o ./gdna_neg.blacklist_filtered.bam
+
+samtools index ./gdna_neg.blacklist_filtered.bam
+
+samtools view -F 1796 ./gdna_neg.blacklist_filtered.bam | ../../src_me/make_end_bed.py --cutwin=30 ../../../2018_worm_atac/ref_data/WS235/c_elegans.WS235.chrom.sizes | sort -k1,1 -k2,2n -T ./ > ./gdna_neg.blacklist_filtered.cuts.bed
+
+
+
+###
+#call peaks -- round one
+samtools view -F 1796 ./all_batches_merged.blacklist_filtered.bam | ../src_me/make_end_bed.py --cutwin=30 ../../2018_worm_atac/ref_data/WS235/c_elegans.WS235.chrom.sizes | sort -k1,1 -k2,2n -T ./ > ./all_batches_merged.blacklist_filtered.cuts.bed
+
+macs2 callpeak -t ./all_batches_merged.blacklist_filtered.cuts.bed -c ./neg_ctrl/gdna_neg.blacklist_filtered.cuts.bed --format=BED -n all_batches_merged.blacklist_filtered --outdir=./ -g 9e7 --nomodel --qvalue=0.05 --SPMR --tsize=60 --bdg --keep-dup all --call-summits
+
+
+
+###
+#call cells based on coverage
+python ../src/preprocess/sc_atac_samespecies_individual_readcounter.py ./all_batches_merged.blacklist_filtered.bam ./all_batches_merged.indextable.txt ./all_batches_merged.blacklist_filtered_peaks.merged.bed ./all_batches_merged.blacklist_filtered.macs2_q0.05_merged.report.txt
+
+Rscript ../src/preprocess/sc_atac_individual_cellcall_plots.R ./all_batches_merged.blacklist_filtered.macs2_q0.05_merged 150
+
+mv all_batches_merged.blacklist_filtered.macs2_q0.05_merged.readdepth.cells.indextable.txt all_batches_merged.blacklist_filtered.macs2_q0.05_merged.readdepth.150.cells.indextable.txt
+
+mv all_batches_merged.blacklist_filtered.macs2_q0.05_merged.results.pdf all_batches_merged.blacklist_filtered.macs2_q0.05_merged.results.150.pdf
+
+mv all_batches_merged.blacklist_filtered.macs2_q0.05_merged.results.hists.pdf all_batches_merged.blacklist_filtered.macs2_q0.05_merged.results.150.hists.pdf
+
+
+
+###
+#make a *.bow file to be input to LDA/clustering
+bedtools intersect -wo -a ./all_batches_merged.blacklist_filtered.cuts.bed -b ./all_batches_merged.blacklist_filtered_peaks.merged.bed \
+  | python ../src_me/peaks_to_bow2.py ./all_batches_merged.blacklist_filtered_peaks.merged.bed ./all_batches_merged.blacklist_filtered.macs2_q0.05_merged.readdepth.150.cells.indextable.txt --out_file=./all_batches_merged.blacklist_filtered.macs2_q0.05_merged.bow
+

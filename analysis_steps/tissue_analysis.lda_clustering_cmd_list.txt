@@ -1,0 +1,32 @@
+cd ATAC_sequencing/all_sciATAC/data_reprocess_ce11/lda_pipeline/tissue_analysis;
+
+tissues=( neuron );
+for tissue in "${tissues[@]}";
+do
+  python ATAC_sequencing/all_sciATAC/src_me/lda_plus2.py --cuts=./${tissue}/${tissue}.cuts.bed --bow=./${tissue}/${tissue}_all_peaks.bow --indextable=./${tissue}/${tissue}_all_peaks.zeros_filtered.indextable.txt --peaks_bed=./${tissue}/${tissue}_all_peaks.zeros_filtered.bed --outdir=./${tissue}/ --topics=5,10,15,20,25,30,35,40,45,50,55,60,70 --seed=1985 --job_threads=8 --job_coremem=4 --job_proj=sage --job_name=${tissue} > ./${tissue}/lda_pipeline.out;
+
+  mkdir ./${tissue}/topic_analysis/rank_peaks;
+
+  python ATAC_sequencing/all_sciATAC/src_me/lda_plus2.py --cuts=./${tissue}/${tissue}.cuts.bed --bow=./${tissue}/topic_analysis/all_peaks.merged.allcells.bow --indextable=./${tissue}/topic_analysis/all_peaks.merged.allcells.zeros_filtered.indextable.txt --peaks_bed=./${tissue}/topic_analysis/all_peaks.merged.allcells.zeros_filtered.bed --outdir=./${tissue}/topic_analysis/rank_peaks --topics=5,10,15,20,25,30,35,40,45,50,55,60,70 --seed=1984 --job_threads=8 --job_coremem=4 --job_proj=sage --job_name=${tissue} > ./${tissue}/topic_analysis/rank_peaks/lda_pipeline.out;
+done;
+
+tissues=( coelomocyte gonad intestine muscle sexmyoblast );
+for tissue in "${tissues[@]}";
+do
+  python ATAC_sequencing/all_sciATAC/src_me/lda_plus2.py --cuts=./${tissue}/${tissue}.cuts.bed --bow=./${tissue}/${tissue}_all_peaks.bow --indextable=./${tissue}/${tissue}_all_peaks.zeros_filtered.indextable.txt --peaks_bed=./${tissue}/${tissue}_all_peaks.zeros_filtered.bed --outdir=./${tissue}/ --topics=2,3,4,5,6,8,10,12,15,20 --seed=1985 --job_threads=4 --job_coremem=4 --job_proj=waterston_noble --job_name=${tissue} > ./${tissue}/lda_pipeline.out;
+
+  mkdir ./${tissue}/topic_analysis/rank_peaks;
+
+  python ATAC_sequencing/all_sciATAC/src_me/lda_plus2.py --cuts=./${tissue}/${tissue}.cuts.bed --bow=./${tissue}/topic_analysis/all_peaks.merged.allcells.bow --indextable=./${tissue}/topic_analysis/all_peaks.merged.allcells.zeros_filtered.indextable.txt --peaks_bed=./${tissue}/topic_analysis/all_peaks.merged.allcells.zeros_filtered.bed --outdir=./${tissue}/topic_analysis/rank_peaks --topics=2,3,4,5,6,8,10,12,15,20 --seed=1984 --job_threads=4 --job_coremem=4 --job_proj=waterston_noble --job_name=${tissue} > ./${tissue}/topic_analysis/rank_peaks/lda_pipeline.out;
+done;
+
+tissues=( glia hypodermis pharynx );
+for tissue in "${tissues[@]}";
+do
+  python ATAC_sequencing/all_sciATAC/src_me/lda_plus2.py --cuts=./${tissue}/${tissue}.cuts.bed --bow=./${tissue}/${tissue}_all_peaks.bow --indextable=./${tissue}/${tissue}_all_peaks.zeros_filtered.indextable.txt --peaks_bed=./${tissue}/${tissue}_all_peaks.zeros_filtered.bed --outdir=./${tissue}/ --topics=2,3,4,5,6,8,10,12,15,20 --seed=1985 --job_threads=8 --job_coremem=4 --job_proj=sage --job_name=${tissue} > ./${tissue}/lda_pipeline.out;
+
+  mkdir ./${tissue}/topic_analysis/rank_peaks;
+
+  python ATAC_sequencing/all_sciATAC/src_me/lda_plus2.py --cuts=./${tissue}/${tissue}.cuts.bed --bow=./${tissue}/topic_analysis/all_peaks.merged.allcells.bow --indextable=./${tissue}/topic_analysis/all_peaks.merged.allcells.zeros_filtered.indextable.txt --peaks_bed=./${tissue}/topic_analysis/all_peaks.merged.allcells.zeros_filtered.bed --outdir=./${tissue}/topic_analysis/rank_peaks --topics=2,3,4,5,6,8,10,12,15,20 --seed=1984 --job_threads=8 --job_coremem=4 --job_proj=sage --job_name=${tissue} > ./${tissue}/topic_analysis/rank_peaks/lda_pipeline.out;
+done;
+

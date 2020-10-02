@@ -1,0 +1,181 @@
+#topics associated with each tissue:
+# intestine: 51 13 23 47
+# muscle: 40
+# gonad: 24 36 48 7
+# hypodermis: 1 25 17 10 43 46 9 41 30
+# neuron: 15 38 32 45 14 6 0 16 33 19 18
+# glia: 21 27 12 31 
+# pharynx: 53 35
+# ceolomocytes: 4
+
+cd ATAC_sequencing/all_sciATAC/data_reprocess_ce11/lda_pipeline;
+mkdir tissue_analysis;
+mkdir tissue_analysis/intestine;
+mkdir tissue_analysis/muscle;
+mkdir tissue_analysis/gonad;
+mkdir tissue_analysis/hypodermis;
+mkdir tissue_analysis/neuron;
+mkdir tissue_analysis/glia;
+mkdir tissue_analysis/pharynx;
+mkdir tissue_analysis/coelomocyte;
+
+##MUSCLE
+muscle_topics=( 40 );
+muscle_peaks=./tissue_analysis/muscle/muscle_peaks.bed; touch $muscle_peaks;
+muscle_cells=./tissue_analysis/muscle/muscle.indextable.txt; touch $muscle_cells;
+muscle_cuts=./tissue_analysis/muscle/muscle.cuts.bed; touch $muscle_cuts;
+for topic in "${muscle_topics[@]}";
+do
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}_peaks.merged.bed >> $muscle_peaks;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.indextable.txt >> $muscle_cells;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.cuts.bed >> $muscle_cuts;
+done;
+sort -k1,1 -k2,2n $muscle_peaks | bedtools merge -i stdin > ${muscle_peaks}.tmp; mv ${muscle_peaks}.tmp $muscle_peaks;
+sort -k1,1 -k2,2n $muscle_cuts > ${muscle_cuts}.tmp; mv ${muscle_cuts}.tmp $muscle_cuts;
+
+
+##COELOMOCYTE
+coelomocyte_topics=( 4 );
+coelomocyte_peaks=./tissue_analysis/coelomocyte/coelomocyte_peaks.bed; touch $coelomocyte_peaks;
+coelomocyte_cells=./tissue_analysis/coelomocyte/coelomocyte.indextable.txt; touch $coelomocyte_cells;
+coelomocyte_cuts=./tissue_analysis/coelomocyte/coelomocyte.cuts.bed; touch $coelomocyte_cuts;
+for topic in "${coelomocyte_topics[@]}";
+do
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}_peaks.merged.bed >> $coelomocyte_peaks;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.indextable.txt >> $coelomocyte_cells;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.cuts.bed >> $coelomocyte_cuts;
+done;
+sort -k1,1 -k2,2n $coelomocyte_peaks | bedtools merge -i stdin > ${coelomocyte_peaks}.tmp; mv ${coelomocyte_peaks}.tmp $coelomocyte_peaks;
+sort -k1,1 -k2,2n $coelomocyte_cuts > ${coelomocyte_cuts}.tmp; mv ${coelomocyte_cuts}.tmp $coelomocyte_cuts;
+
+##GONAD
+gonad_topics=( 24 36 48 7 );
+gonad_peaks=./tissue_analysis/gonad/gonad_peaks.bed; touch $gonad_peaks;
+gonad_cells=./tissue_analysis/gonad/gonad.indextable.txt; touch $gonad_cells;
+gonad_cuts=./tissue_analysis/gonad/gonad.cuts.bed; touch $gonad_cuts;
+for topic in "${gonad_topics[@]}";
+do
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}_peaks.merged.bed >> $gonad_peaks;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.indextable.txt >> $gonad_cells;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.cuts.bed >> $gonad_cuts;
+done;
+sort -k1,1 -k2,2n $gonad_peaks | bedtools merge -i stdin > ${gonad_peaks}.tmp; mv ${gonad_peaks}.tmp $gonad_peaks;
+sort -k1,1 -k2,2n $gonad_cuts > ${gonad_cuts}.tmp; mv ${gonad_cuts}.tmp $gonad_cuts;
+
+##HYPODERMIS
+hypodermis_topics=( 1 25 17 10 43 46 9 41 30 );
+hypodermis_peaks=./tissue_analysis/hypodermis/hypodermis_peaks.bed; touch $hypodermis_peaks;
+hypodermis_cells=./tissue_analysis/hypodermis/hypodermis.indextable.txt; touch $hypodermis_cells;
+hypodermis_cuts=./tissue_analysis/hypodermis/hypodermis.cuts.bed; touch $hypodermis_cuts;
+for topic in "${hypodermis_topics[@]}";
+do
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}_peaks.merged.bed >> $hypodermis_peaks;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.indextable.txt >> $hypodermis_cells;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.cuts.bed >> $hypodermis_cuts;
+done;
+sort -k1,1 -k2,2n $hypodermis_peaks | bedtools merge -i stdin > ${hypodermis_peaks}.tmp; mv ${hypodermis_peaks}.tmp $hypodermis_peaks;
+sort -k1,1 -k2,2n $hypodermis_cuts > ${hypodermis_cuts}.tmp; mv ${hypodermis_cuts}.tmp $hypodermis_cuts;
+
+##PHARYNX
+pharynx_topics=( 53 35 );
+pharynx_peaks=./tissue_analysis/pharynx/pharynx_peaks.bed; touch $pharynx_peaks;
+pharynx_cells=./tissue_analysis/pharynx/pharynx.indextable.txt; touch $pharynx_cells;
+pharynx_cuts=./tissue_analysis/pharynx/pharynx.cuts.bed; touch $pharynx_cuts;
+for topic in "${pharynx_topics[@]}";
+do
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}_peaks.merged.bed >> $pharynx_peaks;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.indextable.txt >> $pharynx_cells;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.cuts.bed >> $pharynx_cuts;
+done;
+sort -k1,1 -k2,2n $pharynx_peaks | bedtools merge -i stdin > ${pharynx_peaks}.tmp; mv ${pharynx_peaks}.tmp $pharynx_peaks;
+sort -k1,1 -k2,2n $pharynx_cuts > ${pharynx_cuts}.tmp; mv ${pharynx_cuts}.tmp $pharynx_cuts;
+
+##GLIA
+glia_topics=( 21 27 12 31 );
+glia_peaks=./tissue_analysis/glia/glia_peaks.bed; touch $glia_peaks;
+glia_cells=./tissue_analysis/glia/glia.indextable.txt; touch $glia_cells;
+glia_cuts=./tissue_analysis/glia/glia.cuts.bed; touch $glia_cuts;
+for topic in "${glia_topics[@]}";
+do
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}_peaks.merged.bed >> $glia_peaks;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.indextable.txt >> $glia_cells;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.cuts.bed >> $glia_cuts;
+done;
+sort -k1,1 -k2,2n $glia_peaks | bedtools merge -i stdin > ${glia_peaks}.tmp; mv ${glia_peaks}.tmp $glia_peaks;
+sort -k1,1 -k2,2n $glia_cuts > ${glia_cuts}.tmp; mv ${glia_cuts}.tmp $glia_cuts;
+
+##INTESTINE
+intestine_topics=( 51 13 23 47 );
+intestine_peaks=./tissue_analysis/intestine/intestine_peaks.bed; touch $intestine_peaks;
+intestine_cells=./tissue_analysis/intestine/intestine.indextable.txt; touch $intestine_cells;
+intestine_cuts=./tissue_analysis/intestine/intestine.cuts.bed; touch $intestine_cuts;
+for topic in "${intestine_topics[@]}";
+do
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}_peaks.merged.bed >> $intestine_peaks;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.indextable.txt >> $intestine_cells;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.cuts.bed >> $intestine_cuts;
+done;
+sort -k1,1 -k2,2n $intestine_peaks | bedtools merge -i stdin > ${intestine_peaks}.tmp; mv ${intestine_peaks}.tmp $intestine_peaks;
+sort -k1,1 -k2,2n $intestine_cuts > ${intestine_cuts}.tmp; mv ${intestine_cuts}.tmp $intestine_cuts;
+
+##NEURONS
+neuron_topics=( 15 38 32 45 14 6 0 16 33 19 18 );
+neuron_peaks=./tissue_analysis/neuron/neuron_peaks.bed; touch $neuron_peaks;
+neuron_cells=./tissue_analysis/neuron/neuron.indextable.txt; touch $neuron_cells;
+neuron_cuts=./tissue_analysis/neuron/neuron.cuts.bed; touch $neuron_cuts;
+for topic in "${neuron_topics[@]}";
+do
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}_peaks.merged.bed >> $neuron_peaks;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.indextable.txt >> $neuron_cells;
+  cat ./topic_analysis/rank_peaks/topic_analysis/${topic}/${topic}.cuts.bed >> $neuron_cuts;
+done;
+sort -k1,1 -k2,2n $neuron_peaks | bedtools merge -i stdin > ${neuron_peaks}.tmp; mv ${neuron_peaks}.tmp $neuron_peaks;
+sort -k1,1 -k2,2n $neuron_cuts > ${neuron_cuts}.tmp; mv ${neuron_cuts}.tmp $neuron_cuts;
+
+
+###
+#make *.bow files
+cd tissue_analysis;
+for path in */*.cuts.bed;
+do
+  pathdir=${path%/*};
+  pathbase=${path%.cuts.bed};
+  tissue=$pathdir;
+
+  qsub -j y -b y -N peaks_to_bow -o ${pathdir}/peaks_to_bow.out -l mfree=16G -P sage -cwd "source activate merged_env; bedtools intersect -wo -a $path -b ${pathbase}_peaks.bed | python ATAC_sequencing/all_sciATAC/src_me/peaks_to_bow2.py ${pathbase}_peaks.bed ${pathbase}.indextable.txt --out_file=${pathbase}_all_peaks.bow";
+
+done
+
+####
+#now run all the commands in lda_pipeline.cmd_list.txt
+
+####
+#Finally, generate the files and split peaks for the track hub
+
+for path in ./*/topic_analysis/rank_peaks/topic_analysis/*/*.narrowPeak;
+do
+  echo $path;
+  bdgfile=${path%_peaks.narrowPeak}_treat_pileup.bdg
+  ctlfile=${path%_peaks.narrowPeak}_control_lambda.bdg
+  outfile=${path%_peaks.narrowPeak}.subtract.bdg;
+  macs2 bdgcmp -t $bdgfile -c $ctlfile -m subtract -o $outfile;
+  bedtools intersect -a $outfile -b ATAC_sequencing/2018_worm_atac/ref_data/WS235/c_elegans.WS235.chrom.sizes.bed > ${outfile}.tmp.bdg;
+  bedGraphToBigWig ${outfile}.tmp.bdg ATAC_sequencing/2018_worm_atac/ref_data/WS235/c_elegans.WS235.chrom.sizes ${outfile%.bdg}.bw; rm ${outfile}.tmp.bdg;
+  python ATAC_sequencing/all_sciATAC/src_me/expand_summits2.py $path ${outfile%.bdg}.bw > ${path%_peaks.narrowPeak}_mysummits_expanded2.bed;
+done
+
+#make trackhub file lists
+tissues=( coelomocyte glia gonad hypodermis intestine muscle neuron pharynx )
+for tissue in "${tissues[@]}";
+do
+  echo $tissue;
+  #merge all peaks to get consensus calls
+  cat ./$tissue/topic_analysis/rank_peaks/topic_analysis/*/*.narrowPeak | sort -k1,1 -k2,2n | bedtools merge -i stdin | awk 'BEGIN{OFS="\t"}{print($0,"peak"NR);}' > ./$tissue/${tissue}.merged_peaks_for_mysummits.bed;
+  python ATAC_sequencing/all_sciATAC/src_me/expand_summits2.py ./$tissue/${tissue}.merged_peaks_for_mysummits.bed ./$tissue/topic_analysis/rank_peaks/topic_analysis/*/*.bw > ./$tissue/${tissue}.consensus_mysummits_expanded2.bed;
+
+  #compile lists of files for the track hubs
+  echo `pwd`/$tissue/${tissue}.consensus_mysummits_expanded2.bed > ./$tissue/${tissue}_track_hub_files.txt;
+  ls -1 `pwd`/$tissue/topic_analysis/rank_peaks/topic_analysis/*/*.bw >> ./$tissue/${tissue}_track_hub_files.txt;
+  ls -1 `pwd`/$tissue/topic_analysis/rank_peaks/topic_analysis/*/*_mysummits_expanded2.bed >> ./$tissue/${tissue}_track_hub_files.txt;
+  ls -1 `pwd`/$tissue/topic_analysis/rank_peaks/topic_analysis/*/*.cuts.bed >> ./$tissue/${tissue}_track_hub_files.txt
+done
