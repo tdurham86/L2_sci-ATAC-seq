@@ -1,6 +1,6 @@
 # L2_sci-ATAC-seq
 
-This repository contains scripts and Jupyter notebooks associated with Durham, et al. "Comprehensive characterization of tissue-specific chromatin accessibility in L2 Caenorhabditis elegans nematodes." BioRxiv. doi: https://doi.org/10.1101/2020.09.15.299123
+This repository contains scripts and Jupyter notebooks associated with Durham, et al. "Comprehensive characterization of tissue-specific chromatin accessibility in L2 Caenorhabditis elegans nematodes." *Genome Research*. 2021. doi: 10.1101/gr.271791.120
 
 It contains four directories:
 
